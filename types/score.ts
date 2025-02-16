@@ -1,7 +1,17 @@
 import { Player } from './player';
 
-// Surely not the best choice
-export type Point = number;
+
+export type Love = { kind: 'LOVE' };
+export type Fifteen = { kind: 'FIFTEEN' };
+export type Thirty = { kind: 'THIRTY' };
+
+export type Point = Love | Fifteen | Thirty | Forty;
+
+// Constructors for the Point type
+export const love = (): Love => ({ kind: 'LOVE' });
+export const fifteen = (): Fifteen => ({ kind: 'FIFTEEN' });
+export const thirty = (): Thirty => ({ kind: 'THIRTY' });
+
 
 export type PointsData = {
   PLAYER_ONE: Point;
@@ -34,16 +44,30 @@ export const deuce = (): Deuce => ({
   kind: 'DEUCE',
 });
 
+// Forty type constructor
+// We remplace this architecture 
+//  export type Forty = {
+//    kind: 'FORTY';
+//    player: Player; // Player who has 40 points
+//    otherPoint: Point; // Other player's points
+//  };
+//with the new one
+
+export type FortyData = {
+  player : Player;
+  otherPoint : Point;
+};
 export type Forty = {
   kind: 'FORTY';
-  player: Player; // Player who has 40 points
-  otherPoint: Point; // Other player's points
+  fortyData: FortyData;
 };
 
 export const forty = (player: Player, otherPoint: Point): Forty => ({
   kind: 'FORTY',
-  player,
-  otherPoint,
+  fortyData: {
+    player,
+    otherPoint,
+  },
 });
 
 export type Advantage = {
