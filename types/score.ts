@@ -46,11 +46,11 @@ export const deuce = (): Deuce => ({
 
 // Forty type constructor
 // We remplace this architecture 
-//  export type Forty = {
-//    kind: 'FORTY';
-//    player: Player; // Player who has 40 points
-//    otherPoint: Point; // Other player's points
-//  };
+      //  export type Forty = {
+      //    kind: 'FORTY';
+      //    player: Player; // Player who has 40 points
+      //    otherPoint: Point; // Other player's points
+      //  };
 //with the new one
 
 export type FortyData = {
