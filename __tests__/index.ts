@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { otherPlayer, playerToString, scoreWhenAdvantage, scoreWhenDeuce, scoreWhenForty } from '..';
+import { otherPlayer, playerToString, scoreWhenAdvantage, scoreWhenDeuce, scoreWhenForty, scoreWhenPoint } from '..';
 import { advantage, deuce, forty, game, thirty } from '../types/score';
 import * as fc from 'fast-check';
 
@@ -81,25 +81,52 @@ describe('Tests for transition functions', () => {
       })
     );
   });
-
+});
 
   // -------------------------TESTS POINTS-------------------------- //
-  // test('Given players at 0 or 15 points score kind is still POINTS', () => {
-  // fc.assert(
-  //   fc.property(G.getPoints(), G.getPlayer(), ({ pointsData }, winner) => {
-  //     throw new Error(
-  //       'Your turn to code the preconditions, expected result and test.'
-  //     );
-  //   })
-  // );
-  // });
-  // test('Given one player at 30 and win, score kind is forty', () => {
-  // fc.assert(
-  //   fc.property(G.getPoints(), G.getPlayer(), ({ pointsData }, winner) => {
-  //     throw new Error(
-  //       'Your turn to code the preconditions, expected result and test.'
-  //     );
-  //   })
-  // );
-  // });
+  test('A player scoring from 0 or 15 keeps the game in POINTS state', () => {
+    fc.assert(
+      fc.property(G.getPoints(), G.getPlayer(), ({ pointsData }, winner) => {
+        // Vérifier que le gagnant a un score de LOVE ou FIFTEEN
+        fc.pre(pointsData[winner].kind === 'LOVE' || pointsData[winner].kind === 'FIFTEEN');
+  
+        const newScore = scoreWhenPoint(pointsData, winner);
+  
+        // Le jeu doit rester dans l'état POINTS
+        expect(newScore.kind).toBe('POINTS');
+  
+        // Vérifier l'incrémentation correcte du score du gagnant
+        if (newScore.kind === 'POINTS') {
+          if (pointsData[winner].kind === 'LOVE') {
+            expect(newScore.pointsData[winner].kind).toBe('FIFTEEN');
+          }
+          if (pointsData[winner].kind === 'FIFTEEN') {
+            expect(newScore.pointsData[winner].kind).toBe('THIRTY');
+          }
+        }
+      })
+    );
+  });
+  test('Given one player at 30 and win, score kind is forty', () => {
+    fc.assert(
+      fc.property(G.getPoints(), G.getPlayer(), ({ pointsData }, winner) => {
+        // Vérifier que le gagnant a un score de THIRTY
+        fc.pre(pointsData[winner].kind === 'THIRTY');
+  
+        // Vérifier que l'autre joueur n'a pas THIRTY (sinon, ce serait une égalité)
+        const opponent = otherPlayer(winner);
+        fc.pre(pointsData[opponent].kind !== 'THIRTY');
+  
+        const newScore = scoreWhenPoint(pointsData, winner);
+  
+        // Le jeu doit passer à l'état FORTY
+        expect(newScore.kind).toBe('FORTY');
+  
+        // Vérifier que les données FORTY sont bien mises à jour
+        if (newScore.kind === 'FORTY') {
+          expect(newScore.fortyData.player).toBe(winner);
+          expect(newScore.fortyData.otherPoint).toStrictEqual(pointsData[opponent]);
+        }
+      })
+    );
 });

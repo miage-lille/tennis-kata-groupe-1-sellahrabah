@@ -1,7 +1,7 @@
 import { isSamePlayer, Player } from './types/player';
-import { advantage, deuce, FortyData, game, Point, PointsData, Score } from './types/score';
-// import { none, Option, some, match as matchOpt } from 'fp-ts/Option';
-// import { pipe } from 'fp-ts/lib/function';
+import { advantage, deuce, fifteen, forty, FortyData, game, Point, points, PointsData, Score, thirty } from './types/score';
+import { none, Option, some, match as matchOpt } from 'fp-ts/Option';
+import { pipe } from 'fp-ts/lib/function';
 
 // -------- Tooling functions --------- //
 
@@ -90,25 +90,54 @@ export const scoreWhenGame = (winner: Player): Score => {
 // Tip: You can use pipe function from fp-ts to improve readability.
 // See scoreWhenForty function above.
 export const scoreWhenPoint = (current: PointsData, winner: Player): Score => {
-  throw new Error('not implemented');
+  const currentPoint = current[winner];
+  switch (currentPoint.kind) {
+    case 'LOVE':
+      return points(
+        winner === 'PLAYER_ONE' ? fifteen() : current.PLAYER_ONE,
+        winner === 'PLAYER_TWO' ? fifteen() : current.PLAYER_TWO
+      );
+    case 'FIFTEEN':
+      return points(
+        winner === 'PLAYER_ONE' ? thirty() : current.PLAYER_ONE,
+        winner === 'PLAYER_TWO' ? thirty() : current.PLAYER_TWO
+      );
+    case 'THIRTY': {
+      const opponent = winner === 'PLAYER_ONE' ? 'PLAYER_TWO' : 'PLAYER_ONE';
+      return forty(winner, current[opponent]);
+    }
+    default:
+      throw new Error('Invalid state');
+  }
+};
+
+export const incrementPoint = (point: Point): Option<Point> => {
+  switch (point.kind) {
+    case 'LOVE':
+      return some(fifteen());
+    case 'FIFTEEN':
+      return some(thirty());
+    case 'THIRTY':
+      return none;
+    default:
+      return none;
+  }
 };
 
 export const score = (currentScore: Score, winner: Player): Score => {
-  throw new Error('not implemented');
+  switch (currentScore.kind) {
+    case 'POINTS':
+      return scoreWhenPoint(currentScore.pointsData, winner);
+    case 'FORTY':
+      return scoreWhenForty(currentScore.fortyData, winner);
+    case 'DEUCE':
+      return advantage(winner);
+    case 'ADVANTAGE':
+      return currentScore.player === winner ? game(winner) : deuce();
+    case 'GAME':
+      return currentScore;
+    default:
+      throw new Error('Invalid state');
 };
-function pipe(arg0: any, arg1: any): Score {
-  throw new Error('Function not implemented.');
-}
-
-function incrementPoint(otherPoint: Point): any {
-  throw new Error('Function not implemented.');
-}
-
-function matchOpt(arg0: () => import("./types/score").Deuce, arg1: (p: any) => Score): any {
-  throw new Error('Function not implemented.');
-}
-
-function forty(player: string, p: any): Score {
-  throw new Error('Function not implemented.');
 }
 
